@@ -229,3 +229,21 @@ instance UnsafeCast Int16 Word16 where
   unsafeCast = castIntegral
 instance UnsafeCast Int8 Word8 where
   unsafeCast = castIntegral
+
+--------------------------------------------------------------------------------
+-- | Really unsafe and probably stupid cast from fractional to integral
+--------------------------------------------------------------------------------
+
+instance UnsafeCast Float Int32 where
+  unsafeCast = unsafeCastFractionalToIntegral
+instance UnsafeCast Float Int64 where
+  unsafeCast = unsafeCastFractionalToIntegral
+instance UnsafeCast Double Int64 where
+  unsafeCast = unsafeCastFractionalToIntegral
+
+-- For constants, truncates just as for C.
+-- TODO better to round?
+unsafeCastFractionalToIntegral
+  :: (RealFrac a, Typed a, Integral b, Typed b) => Stream a -> Stream b
+unsafeCastFractionalToIntegral (Const x) = Const (truncate x)
+unsafeCastFractionalToIntegral x         = Op1 (C.Castf typeOf typeOf) x
